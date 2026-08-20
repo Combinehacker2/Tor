@@ -1,0 +1,48 @@
+DataDirectory /var/lib/tor
+SocksPort 127.0.0.1:9050
+
+# Prevenção de Vazamento de DNS
+DNSPort 127.0.0.1:53530
+AutomapHostsOnResolve 1
+AutomapHostsSuffixes .onion,.exit
+TestSocks 1
+
+# Modo Exit Relay + CGNAT Bypass
+ORPort 9001
+DirPort 0
+AssumeReachable 1
+
+# Suporte Nativo IPv6
+ORPort [::]:9001 IPv6Only
+
+# Identidade do Nó
+Nickname CombineExitLab
+ContactInfo combinehacker2@proton.me
+
+# ATIVAÇÃO DO MODO EXIT RELAY (MUDANÇA CRÍTICA)
+ExitRelay 1
+
+# POLÍTICA DE SAÍDA REDUZIDA (REDUCED EXIT POLICY)
+# Permite navegação web segura padrão, mas bloqueia torrents e servidores de e-mail (evita spam/botnets)
+ExitPolicy accept *:80          # HTTP Web
+ExitPolicy accept *:443         # HTTPS Web Secure
+ExitPolicy accept *:8080        # Alternate HTTP
+ExitPolicy reject *:25          # Bloqueia SMTP (Previne Spam)
+ExitPolicy reject *:465         # Bloqueia SMTP SSL
+ExitPolicy reject *:587         # Bloqueia SMTP TLS
+ExitPolicy reject *:6660-6667   # Bloqueia IRC (C2 Botnets comuns)
+ExitPolicy reject *:6881-6889   # Bloqueia BitTorrent
+ExitPolicy reject *:*           # Rejeita todas as outras portas por padrão
+
+# Controle de Banda Média
+BandwidthRate 4 MBytes
+BandwidthBurst 8 MBytes
+AccountingMax 600 GBytes
+AccountingStart month 1 00:00
+
+# Proteção de Memória e Circuitos
+MaxCircuitDirtiness 120
+CircuitPadding 1
+ReducedConnectionPadding 0
+SafeLogging 1
+Log notice file /var/log/tor/notices.log
