@@ -1,0 +1,72 @@
+# 🧅 Hardened Tor Client Configuration (Maximum Opsec & Anti-DNS Leak)
+
+This repository stores the ultimate, audited **`torrc`** blueprint optimized for local client anonymity, aggressive circuit rotation, and strict DNS leak protection [~ ➜]. This profile is specifically built to operate securely behind consumer-grade internet connections [~ ➜].
+
+---
+
+## 🔒 The Hardened Configuration Blueprint
+
+```ini
+# Configuração Base de Cliente
+DataDirectory /var/lib/tor
+SocksPort 127.0.0.1:9050
+
+# Desativa completamente o Relay (Segurança contra CGNAT)
+ORPort 0
+DirPort 0
+
+# Rotação agressiva de circuitos (Muda de IP de saída a cada 2 minutos)
+MaxCircuitDirtiness 120
+
+# Proteção Avançada de Anonimato
+CircuitPadding 1
+ReducedConnectionPadding 0
+SafeLogging 1
+Log notice file /var/log/tor/notices.log
+
+# Prevenção Absoluta de Vazamento de DNS (DNS Leak)
+DNSPort 127.0.0.1:53530
+AutomapHostsOnResolve 1
+AutomapHostsSuffixes .onion,.exit
+TestSocks 1
+```
+
+---
+
+## 🔬 Architectural Security Breakdown
+
+### 🛡️ 1. CGNAT Isolation & Zero-Inbound Footprint (`ORPort 0`)
+*   By explicitly pinning `ORPort 0` and `DirPort 0`, the Tor daemon acts strictly as an **outbound client node** [~ ➜]. 
+*   It closes all external listening ports, making your host completely invisible to external network scans and fully compatible with **CGNAT (Carrier-Grade NAT)** setups where port forwarding is restricted [~ ➜].
+
+### ⚡ 2. Aggressive Circuit Rotation (`MaxCircuitDirtiness 120`)
+*   Standard Tor installations keep an exit node identity alive for 10 minutes. This configuration drops that threshold down to **120 seconds (2 minutes)** [~ ➜].
+*   Your automation scripts and browser sessions will aggressively rotate their public exit node IPs, severely disrupting behavioral tracking, timing attacks, and endpoint correlation [~ ➜].
+
+### 🕵️‍♂️ 3. Anti-DNS Leak Matrix (`DNSPort` & `AutomapHosts`)
+*   **`DNSPort 127.0.0.1:53530`**: Opens a local secure DNS proxy [~ ➜]. Any system script mapping domain names through this port automatically pushes the plaintext payload straight into the encrypted Onion wrapper, bypassing local ISP resolvers entirely [~ ➜].
+*   **`AutomapHostsOnResolve 1`**: Intercepts map lookups for `.onion` and virtual `.exit` zones, preventing your local system from leaking hidden service descriptors to vanilla upstream name servers [~ ➜].
+
+---
+
+## 🚀 Deployment Instructions
+
+### 📥 1. Apply the Configuration
+Backup your current routing file and overwrite it with this production block [~ ➜]:
+```bash
+sudo cp torrc /etc/tor/torrc
+```
+
+### 🔍 2. Verify Syntax Integrity
+Before firing up the engine, let the Tor binary parse the parameters to confirm its cryptographic layout is valid [~ ➜]:
+```bash
+tor --verify-config
+```
+
+### ⚙️ 3. Initialize the Service
+```bash
+sudo systemctl restart tor
+```
+
+---
+*pacman -S privacy* 🐧🧅🛡️
