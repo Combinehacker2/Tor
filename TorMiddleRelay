@@ -1,0 +1,51 @@
+# Tor Hardened Middle Relay Configuration
+
+Production-grade **`torrc`** configuration file optimized for Arch Linux. Features strict DNS leak protection, native IPv6 support, bandwidth traffic control, and CGNAT bypass using the `AssumeReachable` directive [~ ➜, ~ ➜].
+
+## Configuration File (`torrc`)
+
+```ini
+DataDirectory /var/lib/tor
+SocksPort 127.0.0.1:9050
+
+# Prevenção de Vazamento de DNS
+DNSPort 127.0.0.1:53530
+AutomapHostsOnResolve 1
+AutomapHostsSuffixes .onion,.exit
+TestSocks 1
+
+# Modo Middle Relay + CGNAT Bypass
+ORPort 9001
+DirPort 0
+AssumeReachable 1
+
+# Suporte Nativo IPv6
+ORPort [::]:9001 IPv6Only
+
+# Identidade do Nó
+Nickname GithubDotfiled
+ContactInfo youremail@idkmail.com
+
+# Trava Anti-Exit (Zero Risco)
+ExitRelay 0
+ExitPolicy reject *:*
+
+# Controle de Banda Média
+BandwidthRate 4 MBytes
+BandwidthBurst 8 MBytes
+AccountingMax 600 GBytes
+AccountingStart month 1 00:00
+
+# Proteção de Memória e Circuitos
+MaxCircuitDirtiness 120
+CircuitPadding 1
+ReducedConnectionPadding 0
+SafeLogging 1
+Log notice file /var/log/tor/notices.log
+```
+
+## Deployment
+
+1. Copy the configuration block to `/etc/tor/torrc` [~ ➜].
+2. Verify the configuration integrity: `tor --verify-config` [~ ➜].
+3. Restart the background service daemon: `sudo systemctl restart tor` [~ ➜].
